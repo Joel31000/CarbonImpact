@@ -106,6 +106,7 @@ const formSchema = z.object({
       distance: z.coerce.number().min(0.1, "La distance doit être supérieure à 0."),
       weight: z.coerce.number().min(0.01, "Le poids doit être supérieur à 0."),
       comment: z.string().optional(),
+      helicopterPayload: z.string().optional(),
     })
   ),
 });
@@ -120,6 +121,8 @@ const processOptions = emissionFactors.manufacturing.map((p) => p.name);
 const energyOptions = emissionFactors.energy.map((e) => e.name);
 const implementationOptions = emissionFactors.implementation.map((i) => i.name);
 const transportOptions = emissionFactors.transport.map((t) => t.name);
+const helicopterPayloadOptions = emissionFactors.helicopterPayloads;
+
 
 function SectionCard({
   title,
@@ -305,6 +308,7 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
   const watchedRawMaterials = useWatch({ control: form.control, name: "rawMaterials" });
   const watchedManufacturing = useWatch({ control: form.control, name: "manufacturing" });
   const watchedImplementation = useWatch({ control: form.control, name: "implementation" });
+  const watchedTransport = useWatch({ control: form.control, name: "transport" });
 
   const calculateEmissions = (values: FormValues) => {
     const rmDetails = values.rawMaterials?.map(item => {
@@ -355,9 +359,18 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
     }).filter(item => item.co2e > 0) || [];
 
     const tptDetails = values.transport?.map(item => {
-      const factor = emissionFactors.transport.find(t => t.name === item.mode)?.factor || 0;
-      return { name: item.mode || "Inconnu", co2e: (item.distance || 0) * (item.weight || 0) * factor };
+      let factor = 0;
+      let name = item.mode || "Inconnu";
+      if (item.mode === "Hélicoptère") {
+        const payload = emissionFactors.helicopterPayloads.find(h => h.name === item.helicopterPayload);
+        factor = payload?.factor || 0;
+        name = item.helicopterPayload || "Hélicoptère";
+      } else {
+        factor = emissionFactors.transport.find(t => t.name === item.mode)?.factor || 0;
+      }
+      return { name, co2e: (item.distance || 0) * (item.weight || 0) * factor };
     }).filter(item => item.co2e > 0) || [];
+
 
     const rmTotal = rmDetails.reduce((sum, item) => sum + item.co2e, 0);
     const mfgTotal = mfgDetails.reduce((sum, item) => sum + item.co2e, 0);
@@ -423,6 +436,9 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                 case 'Mise en œuvre':
                     return emissionFactors.implementation.find(i => i.name === item.process)?.factor || 0;
                 case 'Transport':
+                    if (item.mode === 'Hélicoptère') {
+                        return emissionFactors.helicopterPayloads.find(h => h.name === item.helicopterPayload)?.factor || 0;
+                    }
                     return emissionFactors.transport.find(t => t.name === item.mode)?.factor || 0;
                 default:
                     return 0;
@@ -475,6 +491,9 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                 row[2] = 'km';
                 row[8] = (item.weight || 0).toString();
                 row[4] = getEmissionFactor(rubrique, item);
+                 if (item.mode === 'Hélicoptère') {
+                    methodName = item.helicopterPayload || "Hélicoptère";
+                }
             }
             
             row[1] = methodName;
@@ -1200,14 +1219,18 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => tptAppend({ mode: "", distance: 0, weight: 0, comment: "" })}
+                        onClick={() => tptAppend({ mode: "", distance: 0, weight: 0, comment: "", helicopterPayload: "" })}
                       >
                         <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une étape
                       </Button>
                     }
                   >
                     {tptFields.length === 0 && <p className="text-sm text-center text-muted-foreground pt-4">Aucune étape de transport ajoutée.</p>}
-                    {tptFields.map((field, index) => (
+                    {tptFields.map((field, index) => {
+                      const selectedMode = watchedTransport[index]?.mode;
+                      const isHelicopter = selectedMode === 'Hélicoptère';
+
+                      return (
                       <div key={field.id} className="grid grid-cols-[1fr_auto] items-start gap-4 rounded-md border p-4">
                          <div className="flex flex-col gap-4">
                           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -1258,6 +1281,33 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                               )}
                             />
                           </div>
+
+                          {isHelicopter && (
+                             <div className="grid grid-cols-1 gap-4 rounded-md border bg-card/50 p-4">
+                                <p className="col-span-full font-medium text-sm">Paramètres de l'hélicoptère</p>
+                               <FormField
+                                control={form.control}
+                                name={`transport.${index}.helicopterPayload`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Charge utile</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Sélectionnez la charge utile" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {helicopterPayloadOptions.map(h => <SelectItem key={h.name} value={h.name}>{h.name}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
+
                            <FormField
                             control={form.control}
                             name={`transport.${index}.comment`}
@@ -1278,7 +1328,7 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </SectionCard>
                 </TabsContent>
                 

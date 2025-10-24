@@ -87,9 +87,7 @@ export const emissionFactors = {
     { name: "Camion porteur 12 tonnes électrique", factor: 0.036, unit: "kg CO2e/t.km" },
     { name: "Camion porteur 12 tonnes gasoil", factor: 0.241, unit: "kg CO2e/t.km" },
     { name: "Camion porteur 7,5 tonnes gasoil", factor: 0.378, unit: "kg CO2e/t.km" },
-    { name: "Hélicoptère Airbus H125", factor: 1.1, unit: "kg CO2e/t.km" },
-    { name: "Hélicoptère Bell 206 JetRanger", factor: 1.3, unit: "kg CO2e/t.km" },
-    { name: "Hélicoptère Robinson R44", factor: 1.4, unit: "kg CO2e/t.km" },
+    { name: "Hélicoptère", factor: 0, unit: "kg CO2e/t.km" },
     { name: "Train (Fret)", factor: 0.01, unit: "kg CO2e/t.km" },
     { name: "Véhicule utilitaire électrique", factor: 0.15, unit: "kg CO2e/t.km" },
     { name: "Véhicule utilitaire essence", factor: 0.826, unit: "kg CO2e/t.km" },
@@ -100,6 +98,13 @@ export const emissionFactors = {
     { name: "Voiture GNV", factor: 0.12, unit: "kg CO2e/t.km" },
     { name: "Voiture GPL", factor: 0.161, unit: "kg CO2e/t.km" },
   ].sort((a, b) => a.name.localeCompare(b.name)),
+  helicopterPayloads: [
+    { name: "680 Kg (type Bell 206 JetRanger)", factor: 2.7 },
+    { name: "1160 Kg (type Airbus H125 (AS350 Écureuil))", factor: 2.1 },
+    { name: "1200 Kg (type Airbus H130 (EC130 T2))", factor: 1.95 },
+    { name: "1495 Kg (type Airbus EC135)", factor: 1.75 },
+    { name: "1500 Kg (type Airbus H145)", factor: 1.55 },
+    { name: "1770 Kg (type Airbus H160)", factor: 1.4 },
+    { name: "5335 Kg (type Airbus H225 (Super Puma))", factor: 1.05 },
+  ],
 };
-
-    
