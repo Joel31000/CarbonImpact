@@ -77,6 +77,7 @@ const formSchema = z.object({
       rebarMass: z.coerce.number().optional(),
       rebarFactor: z.coerce.number().optional(),
       paintFactor: z.coerce.number().optional(),
+      steelType: z.string().optional(),
     })
   ),
   manufacturing: z.array(
@@ -114,6 +115,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const materialOptions = emissionFactors.materials.map((m) => m.name);
+const steelOptions = emissionFactors.steelTypes.map((s) => s.name);
 const paintOptions = emissionFactors.paint;
 const concreteOptions = emissionFactors.concrete.map((c) => c.name);
 const rebarOptions = emissionFactors.rebar;
@@ -315,7 +317,11 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
       let co2e = 0;
       let name = item.material || "Inconnu";
       
-      if (item.material === "Béton") {
+      if (item.material === "Acier") {
+        name = item.steelType || "Acier";
+        const factor = emissionFactors.steelTypes.find(s => s.name === item.steelType)?.factor || 0;
+        co2e = (item.quantity || 0) * factor;
+      } else if (item.material === "Béton") {
         name = item.concreteType || "Béton";
         const quantity = item.quantity || 0;
         const cementMass = item.cementMass || 0;
@@ -422,6 +428,9 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
         const getEmissionFactor = (rubrique: string, item: any) => {
             switch (rubrique) {
                 case 'Matériaux':
+                    if (item.material === 'Acier') {
+                        return emissionFactors.steelTypes.find(s => s.name === item.steelType)?.factor || 0;
+                    }
                     if (item.material === 'Béton') {
                         return emissionFactors.concrete.find(c => c.name === item.concreteType)?.factor || 0;
                     }
@@ -456,8 +465,11 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
             if (rubrique === 'Matériaux') {
                 row[3] = quantity;
                 row[4] = getEmissionFactor(rubrique, item);
-
-                if (item.material === "Béton") {
+                
+                if (item.material === "Acier") {
+                    methodName = item.steelType;
+                    row[2] = 'kg';
+                } else if (item.material === "Béton") {
                     methodName = item.concreteType || "Béton";
                     row[2] = 'm³';
                     row[5] = (item.cementMass || 0).toString();
@@ -633,6 +645,14 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                     case 'Matériaux': {
                         let material = methodName;
                         let concreteType;
+                        let steelType;
+
+                        const isSteelType = emissionFactors.steelTypes.some(s => s.name === methodName);
+                        if (isSteelType) {
+                            material = 'Acier';
+                            steelType = methodName;
+                        }
+
                         const isReinforced = methodName.includes('armé');
                         if (isReinforced) {
                              material = 'Béton';
@@ -654,6 +674,7 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                             rebarMass: Number(row[headerMap['Masse de ferraillage (kg/m³)']]) || 0,
                             rebarFactor: Number(row[headerMap["Facteur d'émission armature (kg CO²e)"]]) || 0,
                             paintFactor: material === 'Peinture' ? Number(row[headerMap["Facteur d'émission (kg CO²e)"]]) : undefined,
+                            steelType: steelType,
                         });
                         break;
                     }
@@ -767,6 +788,7 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                           rebarMass: 0,
                           rebarFactor: 1.2,
                           paintFactor: 1.6,
+                          steelType: "",
                         })}
                       >
                         <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un matériau
@@ -776,6 +798,7 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                     {rmFields.length === 0 && <p className="text-sm text-center text-muted-foreground pt-4">Aucun matériau ajouté.</p>}
                     {rmFields.map((field, index) => {
                       const selectedMaterial = watchedRawMaterials[index]?.material;
+                      const isSteel = selectedMaterial === 'Acier';
                       const isConcrete = selectedMaterial === 'Béton';
                       const isPaint = selectedMaterial === 'Peinture';
                       const isEnrobeChaud = selectedMaterial === 'Enrobé à chaud';
@@ -824,6 +847,31 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                               )}
                             />
                           </div>
+
+                          {isSteel && (
+                            <div className="grid grid-cols-1 gap-4 rounded-md border bg-card/50 p-4">
+                               <FormField
+                                control={form.control}
+                                name={`rawMaterials.${index}.steelType`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Nuance d'acier</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Sélectionnez une nuance" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {steelOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
                           
                           {isPaint && (
                             <div className="grid grid-cols-1 gap-4 rounded-md border bg-card/50 p-4">
@@ -1376,5 +1424,3 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
     </Form>
   );
 }
-
-    

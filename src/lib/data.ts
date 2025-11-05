@@ -1,8 +1,7 @@
 
 export const emissionFactors = {
   materials: [
-    { name: "Acier (Recyclé)", factor: 0.5, unit: "kg CO2e/kg" },
-    { name: "Acier (Vierge)", factor: 2.0, unit: "kg CO2e/kg" },
+    { name: "Acier", factor: 0, unit: "kg CO2e/kg" }, // Calcul dynamique
     { name: "Aluminium (Recyclé)", factor: 1.5, unit: "kg CO2e/kg" },
     { name: "Aluminium (Vierge)", factor: 11.0, unit: "kg CO2e/kg" },
     { name: "Barre d'acier", factor: 2.21, unit: "kg CO2e/kg" },
@@ -17,6 +16,15 @@ export const emissionFactors = {
     { name: "Peinture", factor: 0, unit: "kg CO2e/m²" }, // Calcul dynamique
     { name: "Plastique (PET)", factor: 2.3, unit: "kg CO2e/kg" },
     { name: "Verre", factor: 0.9, unit: "kg CO2e/kg" },
+  ].sort((a, b) => a.name.localeCompare(b.name)),
+  steelTypes: [
+    { name: "Acier filière haut fourneau (BOF)", factor: 1.8, unit: "kg CO2e/kg" },
+    { name: "Acier DRI-EAF (Réduction Directe Fer au gaz naturel, couplée EAF)", factor: 1.35, unit: "kg CO2e/kg" },
+    { name: "Acier H2-DRI-EAF (Réduction Fer à l'hydrogène vert, couplée EAF)", factor: 0.7, unit: "kg CO2e/kg" },
+    { name: "Acier inoxydable (four électrique)", factor: 0.65, unit: "kg CO2e/kg" },
+    { name: "Acier recyclé", factor: 0.5, unit: "kg CO2e/kg" },
+    { name: "Acier filière four à arc électrique (EAF, recyclé)", factor: 0.425, unit: "kg CO2e/kg" },
+    { name: "Acier «XCarb» (EAF, énergie renouvelable)", factor: 0.3, unit: "kg CO2e/kg" },
   ].sort((a, b) => a.name.localeCompare(b.name)),
   paint: Array.from({ length: 16 }, (_, i) => 1.0 + i * 0.1).map(v => ({
     name: `${v.toFixed(1)} kgCO₂eq/m²`,
@@ -110,5 +118,3 @@ export const emissionFactors = {
     { name: "5335 Kg (type Airbus H225 (Super Puma))", factor: 1.05 },
   ],
 };
-
-    
