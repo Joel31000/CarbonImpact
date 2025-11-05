@@ -470,7 +470,8 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                     methodName = "Peinture";
                     row[2] = 'm²';
                 } else {
-                    row[2] = 'kg';
+                    const materialData = emissionFactors.materials.find(m => m.name === item.material);
+                    row[2] = materialData?.unit.split('/')[1] || 'kg';
                 }
             } else if (rubrique === 'Fabrication') {
                 row[3] = quantity;
@@ -777,11 +778,13 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
                       const selectedMaterial = watchedRawMaterials[index]?.material;
                       const isConcrete = selectedMaterial === 'Béton';
                       const isPaint = selectedMaterial === 'Peinture';
+                      const isEnrobeChaud = selectedMaterial === 'Enrobé à chaud';
+                      const isEnrobeFroid = selectedMaterial === 'Enrobé à froid';
                       const isReinforced = isConcrete && watchedRawMaterials[index]?.isReinforced;
 
                       let quantityUnit = 'kg';
                       if (isConcrete) quantityUnit = 'm³';
-                      if (isPaint) quantityUnit = 'm²';
+                      if (isPaint || isEnrobeChaud || isEnrobeFroid) quantityUnit = 'm²';
 
                       return (
                       <div key={field.id} className="grid grid-cols-[1fr_auto] items-start gap-4 rounded-md border p-4">
@@ -1373,3 +1376,5 @@ export function CarbonConsultForm({ consultationLabel }: { consultationLabel: st
     </Form>
   );
 }
+
+    

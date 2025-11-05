@@ -11,6 +11,8 @@ export const emissionFactors = {
     { name: "Canalisation PVC", factor: 2.47, unit: "kg CO2e/kg" },
     { name: "Cuivre Classique", factor: 4.50, unit: "kg CO2e/kg" },
     { name: "Cuivre recyclé", factor: 1.50, unit: "kg CO2e/kg" },
+    { name: "Enrobé à chaud", factor: 0.05, unit: "kg CO2e/m²" },
+    { name: "Enrobé à froid", factor: 0.02, unit: "kg CO2e/m²" },
     { name: "Papier/Carton", factor: 0.6, unit: "kg CO2e/kg" },
     { name: "Peinture", factor: 0, unit: "kg CO2e/m²" }, // Calcul dynamique
     { name: "Plastique (PET)", factor: 2.3, unit: "kg CO2e/kg" },
@@ -108,3 +110,5 @@ export const emissionFactors = {
     { name: "5335 Kg (type Airbus H225 (Super Puma))", factor: 1.05 },
   ],
 };
+
+    
