@@ -8,13 +8,13 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M17.4 8.6c-2.3 2.6-4.5 5.3-6.8 7.9" />
-      <path d="M10.8 16.5c-3.1-3.1-5.6-6.2-7.2-8.3C5.2 5.3 8.2 3.4 11.2 3c3.2-.4 6.2 1.3 8.5 3.5 2.1 2 3.2 4.6 3.2 7.2 0 2.9-1.3 5.7-3.5 7.8" />
+      <path d="M7 13.1l3.5 3.5L17.5 9.5" />
+      <path d="M21 12.1a9.1 9.1 0 1 1-9-9.1" />
     </svg>
   );
 }
